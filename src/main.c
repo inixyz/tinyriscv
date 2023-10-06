@@ -5,32 +5,33 @@ typedef struct{
 	uint8_t* memory;
 }tinyrv_cpu;
 
-uint32_t tinyrv_ram_load(const tinyrv_cpu* cpu, const uint32_t addr, 
-	const uint8_t size){
+const uint32_t MEMORY_OFFSET = 0x80000000;
 
-	uint32_t val = 0;
-
-	for(uint8_t i = 0; i < size; i++){
-		val |= (uint32_t)cpu->memory[addr + i] << (i * 8);
-	}
-
-	return val;
+static inline uint32_t load32(const uint8_t* memory, const uint32_t addr){
+	return *(uint32_t*)(memory + addr - MEMORY_OFFSET);
 }
 
-#include <stdio.h>
+static inline uint32_t select_bits(const uint32_t val, const uint8_t end, 
+	const uint8_t start){
+
+	const uint8_t len = end - start + 1;
+	return val >> start & (1 << len - 1);
+}
+
+void tinyrv_step(tinyrv_cpu* cpu){
+	//instruction fetch
+	const uint32_t inst = load32(cpu->memory, cpu->pc);
+	cpu->pc += 4;
+
+	//instruction decoding
+	#define rd select_bits(inst, 11, 7)
+	#define rs1 select_bits(inst, 19, 15)
+	#define rs2 select_bits(inst, 24, 20)
+
+	const uint8_t opcode = select_bits(inst, 6, 0);
+}
 
 int main(){
-	uint8_t memory[100];
 	tinyrv_cpu cpu;
-	cpu.memory = memory;
-
-	memory[0] = 0xAA;
-	memory[1] = 0xBB;
-	memory[2] = 0xCC;
-	memory[3] = 0xDD;
-
-	printf("%x\n", tinyrv_ram_load(&cpu, 0, 1));
-	printf("%x\n", tinyrv_ram_load(&cpu, 0, 2));
-	printf("%x\n", tinyrv_ram_load(&cpu, 0, 3));
-	printf("%x\n", tinyrv_ram_load(&cpu, 0, 4));
+	cpu.pc = MEMORY_OFFSET;
 }
