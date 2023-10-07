@@ -1,2 +1,2 @@
 default:
-	gcc src/main.c -o tinyriscv
+	gcc main.c -o tinyriscv
