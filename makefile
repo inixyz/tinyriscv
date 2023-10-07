@@ -1,2 +1,2 @@
 default:
-	gcc src/*.c -o tinyrv
+	gcc src/main.c -o tinyriscv
