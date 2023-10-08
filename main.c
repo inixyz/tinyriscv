@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef struct{
 	uint32_t regs[32], pc;
@@ -35,24 +37,49 @@ static inline void store32(uint8_t* mem, const uint32_t addr,
 	*(uint32_t*)(mem + addr - MEM_OFFSET) = val;
 }
 
+void jump(uint32_t* pc, const uint32_t addr){
+	if(addr % 4 != 0){
+		fprintf(stderr, "EXCEPTION: instruction-address-misaligned\n");
+		exit(1);
+	}
+
+	*pc = addr;
+}
+
 void B_type(uint32_t* pc, const uint8_t func3, const uint32_t regs[32], 
 	const uint8_t rs1, const uint8_t rs2, const int16_t imm){
 
 	*pc -= 4;
 
 	switch(func3){
-	case /*BEQ*/ 0x0: if(regs[rs1] == regs[rs2]) *pc += (int32_t)imm; break;
-	case /*BNE*/ 0x1: if(regs[rs1] != regs[rs2]) *pc += (int32_t)imm; break;
+	case /*BEQ*/ 0x0: 
+		if(regs[rs1] == regs[rs2]) jump(pc, *pc + (int32_t)imm); 
+		break;
+
+	case /*BNE*/ 0x1: 
+		if(regs[rs1] != regs[rs2]) jump(pc, *pc + (int32_t)imm); 
+		break;
+
 	case /*BLT*/ 0x4: 
-		if((int32_t)regs[rs1] < (int32_t)regs[rs2]) *pc += (int32_t)imm; 
+		if((int32_t)regs[rs1] < (int32_t)regs[rs2]){
+			jump(pc, *pc + (int32_t)imm); 
+		}
 		break;
 
 	case /*BGE*/ 0x5:
-		if((int32_t)regs[rs1] >= (int32_t)regs[rs2]) *pc += (int32_t)imm;
+		if((int32_t)regs[rs1] >= (int32_t)regs[rs2]){
+			jump(pc, *pc + (int32_t)imm);
+		}
 		break;
 
-	case /*BLTU*/ 0x6: if(regs[rs1] < regs[rs2]) *pc += (int32_t)imm; break;
-	case /*BGEU*/ 0x7: if(regs[rs1] >= regs[rs2]) *pc += (int32_t)imm; break;
+	case /*BLTU*/ 0x6: 
+		if(regs[rs1] < regs[rs2]) jump(pc, *pc + (int32_t)imm); 
+		break;
+
+	case /*BGEU*/ 0x7: if(regs[rs1] >= regs[rs2]) 
+		jump(pc, *pc + (int32_t)imm); 
+		break;
+
 	default: *pc += 4; break;
 	}
 }
@@ -141,13 +168,29 @@ void step(Cpu* cpu){
 	#define rs2    (inst >> 20 & 0x1f)
 	#define imm_I  ((int32_t)inst >> 20)
 	#define imm_S  (imm_I & 0xffffffe0 | rd)
-	#define imm_B  ((int32_t)inst >> 31 << 12 | (inst & 0x80 << 4) | \
-		(inst >> 20 & 0x7e0) | (inst >> 7 & 0x1e))
+
+	#define imm_B  (((int32_t)(inst & 0x80000000) >> 19) | \
+		((inst & 0x80) << 4) | (inst >> 20 & 0x7e0) | (inst >> 7 & 0x1e))
+
+	#define imm_J  (((int32_t)(inst & 0x80000000) >> 11) | (inst & 0xff000) | \
+        (inst >> 9 & 0x800) | (inst >> 20 & 0x7fe))
 
 	//execute
 	cpu->regs[0] = 0;
 
 	switch(opcode){
+	case /*LUI*/ 0x37: cpu->regs[rd] = inst & 0xfffff000; break;
+	case /*AUIPC*/ 0x17: cpu->regs[rd] = cpu->pc + (inst & 0xfffff000); break;
+	case /*JAL*/ 0x6f: 
+		cpu->regs[rd] = cpu->pc; jump(&cpu->pc, cpu->pc + imm_J - 4); 
+		break;
+
+	case /*JALR*/ 0x67: 
+		const uint32_t pc_copy = cpu->pc;
+		jump(&cpu->pc, (cpu->regs[rs1] + (int32_t)imm_I) & 0xfffffffe);
+		cpu->regs[rd] = pc_copy;
+		break;
+
 	case 0x63: B_type(&cpu->pc, func3, cpu->regs, rs1, rs2, imm_B); break;
 	case 0x03: L_type(cpu->mem, func3, cpu->regs, rd, rs1, imm_I); break;
 	case 0x23: S_type(cpu->mem, func3, cpu->regs, rs1, rs2, imm_S); break;
