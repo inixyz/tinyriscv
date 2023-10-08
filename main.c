@@ -61,8 +61,8 @@ void R_type(const uint8_t func3, const uint8_t func7, uint32_t regs[32],
 	}
 }
 
-void L_type(const uint8_t func3, uint32_t regs[32], const uint8_t rd, 
-	const uint8_t* mem, const uint8_t rs1, const int16_t imm){
+void L_type(const uint8_t* mem, const uint8_t func3, uint32_t regs[32], 
+	const uint8_t rd, const uint8_t rs1, const int16_t imm){
 
 	switch(func3){
 	case /*LB*/ 0x0: 
@@ -79,6 +79,34 @@ void L_type(const uint8_t func3, uint32_t regs[32], const uint8_t rd,
 	}
 }
 
+void S_type(uint8_t* mem, const uint8_t func3, const uint32_t regs[32], 
+	const uint8_t rs1, const uint8_t rs2, const int16_t imm){
+
+	switch(func3){
+	case /*SB*/ 0x0: store8(mem, regs[rs1] + (int32_t)imm, regs[rs2]); break;
+	case /*SH*/ 0x1: store16(mem, regs[rs1] + (int32_t)imm, regs[rs2]); break;
+	case /*SW*/ 0x2: store32(mem, regs[rs1] + (int32_t)imm, regs[rs2]); break;
+	}
+}
+
+void I_type(const uint8_t func3, const uint8_t func7, uint32_t regs[32], 
+	const uint8_t rd, const uint8_t rs1, const uint8_t rs2, const int16_t imm){
+
+	switch(func3){
+	case /*ADDI*/ 0x0: regs[rd] = regs[rs1] + (int32_t)imm; break;
+	case /*SLTI*/ 0x2: regs[rd] = (int32_t)regs[rs1] < (int32_t)imm; break;
+	case /*SLTIU*/ 0x3: regs[rd] = regs[rs1] < (uint32_t)(int32_t)imm; break;
+	case /*XORI*/ 0x4: regs[rd] = regs[rs1] ^ (int32_t)imm; break;
+	case /*ORI*/ 0x6: regs[rd] = regs[rs1] | (int32_t)imm; break;
+	case /*ANDI*/ 0x7: regs[rd] = regs[rs1] & (int32_t)imm; break;
+	case /*SLLI*/ 0x1: regs[rd] = regs[rs1] << rs2; break;
+	case /*SRLI/SRAI*/ 0x5:
+		if(func7 == /*SRLI*/ 0x00) regs[rd] = regs[rs1] >> rs2;
+		else if(func7 == /*SRAI*/ 0x20) regs[rd] = (int32_t)regs[rs1] >> rs2;
+		break;
+	} 
+}
+
 void step(Cpu* cpu){
 	//fetch
 	const uint32_t inst = load32(cpu->mem, cpu->pc);
@@ -92,12 +120,15 @@ void step(Cpu* cpu){
 	#define rs1    (inst >> 15 & 0x1f)
 	#define rs2    (inst >> 20 & 0x1f)
 	#define imm_I  ((int32_t)inst >> 20)
+	#define imm_S  (imm_I & 0xffffffe0 | rd)
 
 	//execute
 	cpu->regs[0] = 0;
 
 	switch(opcode){
-	case 0x03: L_type(func3, cpu->regs, rd, cpu->mem, rs1, imm_I); break;
+	case 0x03: L_type(cpu->mem, func3, cpu->regs, rd, rs1, imm_I); break;
+	case 0x23: S_type(cpu->mem, func3, cpu->regs, rs1, rs2, imm_S); break;
+	case 0x13: I_type(func3, func7, cpu->regs, rd, rs1, rs2, imm_I); break;
 	case 0x33: R_type(func3, func7, cpu->regs, rd, rs1, rs2); break;
 	}
 }
