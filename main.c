@@ -19,6 +19,22 @@ static inline uint32_t load32(const uint8_t* mem, const uint32_t addr){
 	return *(uint32_t*)(mem + addr - MEM_OFFSET);
 }
 
+static inline void store8(uint8_t* mem, const uint32_t addr, const uint8_t val){
+	mem[addr - MEM_OFFSET] = val;
+}
+
+static inline void store16(uint8_t* mem, const uint32_t addr, 
+	const uint16_t val){
+
+	*(uint16_t*)(mem + addr - MEM_OFFSET) = val;
+}
+
+static inline void store32(uint8_t* mem, const uint32_t addr, 
+	const uint32_t val){
+
+	*(uint32_t*)(mem + addr - MEM_OFFSET) = val;
+}
+
 void R_type(const uint8_t func3, const uint8_t func7, uint32_t regs[32], 
 	const uint8_t rd, const uint8_t rs1, const uint8_t rs2){
 
