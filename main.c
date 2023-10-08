@@ -5,18 +5,47 @@ typedef struct{
 	uint8_t* mem;
 }Cpu;
 
-const uint32_t MEMORY_OFFSET = 0x80000000;
+const uint32_t MEM_OFFSET = 0x80000000;
+
+static inline uint8_t load8(const uint8_t* memory, const uint32_t addr){
+	return memory[addr - MEM_OFFSET];
+}
+
+static inline uint16_t load16(const uint8_t* memory, const uint32_t addr){
+	return *(uint16_t*)(memory + addr - MEM_OFFSET);
+}
 
 static inline uint32_t load32(const uint8_t* memory, const uint32_t addr){
-	return *(uint32_t*)(memory + addr - MEMORY_OFFSET);
+	return *(uint32_t*)(memory + addr - MEM_OFFSET);
 }
 
-static inline uint32_t select_bits(const uint32_t val, const uint8_t end, 
-	const uint8_t start){
-
-	const uint8_t len = end - start + 1;
-	return val >> start & (1 << len - 1);
+static inline uint8_t decode_opcode(const uint32_t inst){
+	return inst & 0x7f;
 }
+
+static inline uint8_t decode_func3(const uint32_t inst){
+	return inst >> 12 & 0x7;
+}
+
+static inline uint8_t decode_func7(const uint32_t inst){
+	return inst >> 25 & 0x7f;
+}
+
+static inline uint8_t decode_rd(const uint32_t inst){
+	return inst >> 7 & 0x1f;
+}
+
+static inline uint8_t decode_rs1(const uint32_t inst){
+	return inst >> 15 & 0x1f;
+}
+
+static inline uint8_t decode_rs2(const uint32_t inst){
+	return inst >> 20 & 0x1f;
+}
+
+// static inline int16_t decode_imm_I(const uint32_t inst){
+	
+// }
 
 void R_type(const uint8_t func3, const uint8_t func7, uint32_t regs[32], 
 	const uint8_t rd, const uint8_t rs1, const uint8_t rs2){
@@ -42,25 +71,29 @@ void R_type(const uint8_t func3, const uint8_t func7, uint32_t regs[32],
 	}
 }
 
+// void L_type(){
+
+// 	switch(func3){
+// 	case /*LB*/ 0x0: regs[rd] = (int32_t)(int8_t)load8(mem, regs[rs1] + ) break;
+// 	}
+// }
+
 void step(Cpu* cpu){
 	//instruction fetch
 	const uint32_t inst = load32(cpu->mem, cpu->pc);
 	cpu->pc += 4;
 
 	//instruction decoding
-	#define opcode select_bits(inst, 6, 0)
-	#define func3 select_bits(inst, 14, 12)
-	#define func7 select_bits(inst, 31, 25)
-	#define rd select_bits(inst, 11, 7)
-	#define rs1 select_bits(inst, 19, 15)
-	#define rs2 select_bits(inst, 24, 20)
+	#define opcode decode_opcode(inst)
+	#define func3 decode_func3(inst)
+	#define func7 decode_func7(inst)
+	#define rd decode_rd(inst)
+	#define rs1 decode_rs1(inst)
+	#define rs2 decode_rs2(inst)
 
 	//execute
 	switch(opcode){
 	case /*R-type*/ 0x33: R_type(func3, func7, cpu->regs, rd, rs1, rs2); break;
-	//case /*I-type*/ 0x03: I_type(); break;
-	//case /*S-type*/ 0x23: S_type(); break;
-	//case /*B-type*/ 0x63: B_type(); break;
 	}
 }
 
