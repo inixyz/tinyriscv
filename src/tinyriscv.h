@@ -173,4 +173,8 @@ void tinyriscv_step(tinyriscv_Cpu* cpu){
 	}
 }
 
+void tinyriscv_init(tinyriscv_Cpu* cpu){
+	cpu->pc = MEM_OFFSET;
+}
+
 #endif //TINYRISCV_H
