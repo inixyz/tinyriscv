@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -175,7 +176,7 @@ void init(Cpu* cpu){
 	cpu->pc = MEM_OFFSET;
 }
 
-void dump_registers(const Cpu* cpu){
+void regdump(const Cpu* cpu){
 	printf("pc = 0x%.8x\n\n", cpu->pc);
 
 	for(unsigned int i = 0; i < 32; i++){
@@ -185,10 +186,30 @@ void dump_registers(const Cpu* cpu){
 }
 
 int main(int argc, char** argv){
+	if(argc < 2){
+		printf("USAGE: tinyricv <file_path>\n");
+		exit(0);
+	}
+
+	FILE* file = fopen(argv[1], "rb");
+	if(!file){
+		perror("ERROR: Can't open file: ");
+		exit(-1);
+	}
+
 	Cpu cpu;
+	cpu.mem = malloc(4096);
+
+	fseek(file, 0, SEEK_END);
+	unsigned int file_size = ftell(file);
+	rewind(file);
+	fread(cpu.mem, 1, file_size, file);
+	fclose(file);
+
 	init(&cpu);
 
-	//FILE* file = fopen(argv[1], "rb");
+	while(cpu.pc < file_size + MEM_OFFSET) step(&cpu);
 
-	dump_registers(&cpu);
+	regdump(&cpu);
+	free(cpu.mem);
 }
