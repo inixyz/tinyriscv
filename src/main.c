@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "tinyriscv.h"
 
 void regdump(const trv_cpu* cpu){
@@ -11,9 +12,31 @@ void regdump(const trv_cpu* cpu){
 	}
 }
 
+void help(void){
+	printf("Usage: tinyricv [OPTION] [VALUE] ...\n\n");
+	printf("  --help               Display this information.\n");
+	printf("  --bin <file>         Load <file> into memory.\n");
+	printf("  --mem_size <size>    Set memory to have <size> bytes.\n");
+
+	exit(0);
+}
+
 int main(int argc, char** argv){
+
+	size_t mem_size = 4096;
+
+	for(unsigned int i = 0; i < argc; i++){
+		if(!strcmp(argv[i], "--help")) help();
+			
+			else if(!strcmp(argv[i], "--mem_size")){
+			if(!argv[i + 1]){
+				printf("")		
+			}
+		} mem_size = atoi(argv[i + 1]);
+	}
+
 	if(argc < 2){
-		printf("USAGE: tinyricv <file_path>\n");
+		//printf("USAGE: tinyricv <file_path>\n");
 		exit(0);
 	}
 
