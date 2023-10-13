@@ -51,7 +51,7 @@ int main(int argc, char** argv){
 	}
 
 	trv_cpu cpu;
-	cpu.mem = malloc(mem_size);
+	cpu.mem = malloc(cpu.mem_size = mem_size);
 
 	//file handling
 	FILE* file = fopen(file_path, "rb");

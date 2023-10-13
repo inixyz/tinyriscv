@@ -12,7 +12,7 @@ typedef int16_t i16;
 typedef int32_t i32;
 
 typedef struct{
-	u32 regs[32], pc;
+	u32 regs[32], pc, mem_size;
 	u8* mem;
 }trv_cpu;
 
@@ -174,6 +174,7 @@ void trv_step(trv_cpu* cpu){
 }
 
 void trv_init(trv_cpu* cpu){
+	cpu->regs[2] = trv_MEM_OFFSET + cpu->mem_size;
 	cpu->pc = trv_MEM_OFFSET;
 }
 
