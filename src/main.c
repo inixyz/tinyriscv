@@ -4,12 +4,31 @@
 #include <assert.h>
 #include "tinyriscv.h"
 
+char lf(char c){
+	if(c < 32) return 48;
+	if(c > 126) return 48;
+	return c;
+}
+
 void regdump(const trv_cpu* cpu){
 	printf("pc = 0x%.8x\n\n", cpu->pc);
 
+	printf("\t\t\t\t\t\t reg 1Dec2Dec3Dec4Dec 1Hx2Hx3Hx4Hx C_h_a_r reg 1Dec2Dec3Dec4Dec 1Hx2Hx3Hx4Hx C_h_a_r\n");
 	for(unsigned int i = 0; i < 32; i++){
 		printf("r%.2d = 0x%.8x\t", i, cpu->regs[i]);
-		if(i % 2) printf("\n");
+		if(i % 2){
+			printf(" r%.2d ", i-1);
+			printf(" %.3hhu %.3hhu %.3hhu %.3hhu ", *((char*)(cpu->regs + i-1)), *(((char*)(cpu->regs + i-1)) + 1), *((char*)(cpu->regs + i-1) + 2), *((char*)(cpu->regs + i-1) + 3));
+			printf(" %.2x %.2x %.2x %.2x ", *((char*)(cpu->regs + i-1)) & 0xff, *((char*)(cpu->regs + i-1) + 1) & 0xff, *((char*)(cpu->regs + i-1) + 2) & 0xff, *((char*)(cpu->regs + i-1) + 3) & 0xff);
+			printf("%c %c %c %c ", lf(*((char*)(cpu->regs + i-1))), lf(*((char*)(cpu->regs + i-1) + 1)), lf(*((char*)(cpu->regs + i-1) + 2)), lf(*((char*)(cpu->regs + i-1) + 3)));
+
+			printf("r%.2d ", i);
+			printf(" %.3hhu %.3hhu %.3hhu %.3hhu ", *((char*)(cpu->regs + i)), *((char*)(cpu->regs + i) + 1), *((char*)(cpu->regs + i) + 2), *((char*)(cpu->regs + i) + 3));
+			printf(" %.2x %.2x %.2x %.2x ", *((char*)(cpu->regs + i)), *((char*)(cpu->regs + i) + 1), *((char*)(cpu->regs + i) + 2), *((char*)(cpu->regs + i) + 3));
+			printf("%c %c %c %c ", lf(*((char*)(cpu->regs + i))), lf(*((char*)(cpu->regs + i) + 1)), lf(*((char*)(cpu->regs + i) + 2)), lf(*((char*)(cpu->regs + i) + 3)));
+			
+			printf("\n");
+		}
 	}
 }
 
@@ -72,6 +91,7 @@ int main(int argc, char** argv){
 	while(cpu.pc < file_size + trv_MEM_OFFSET) trv_step(&cpu);
 
 	//cleanup
+	cpu.regs[2] = 0x5c4a4b4c;
 	if(do_regdump) regdump(&cpu);
 	free(cpu.mem);
 }
