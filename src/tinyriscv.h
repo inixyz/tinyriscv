@@ -154,7 +154,7 @@ void tinyriscv_step(tinyriscv_hart* hart){
 
 	switch(opcode){
 	case /*LUI*/   0x37: hart->x[rd] = inst & 0xfffff000; break;
-	case /*AUIPC*/ 0x17: hart->x[rd] = hart->pc + (inst & 0xfffff000); break;
+	case /*AUIPC*/ 0x17: hart->x[rd] = hart->pc - 4 + (inst & 0xfffff000); break;
 	case /*JAL*/   0x6f: hart->x[rd] = hart->pc; hart->pc += imm_j - 4; break;
 	case /*JALR*/  0x67: 
 		const u32 last_pc = hart->pc;

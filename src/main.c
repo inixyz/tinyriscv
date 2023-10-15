@@ -94,7 +94,7 @@ int main(int argc, char** argv){
 	}
 
 	tinyriscv_hart hart;
-	hart.mem = malloc(hart.mem_size = mem_size);
+	hart.mem = calloc(hart.mem_size = mem_size, 1);
 
 	//file handling
 	FILE* file = fopen(file_path, "rb");
