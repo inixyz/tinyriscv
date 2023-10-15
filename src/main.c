@@ -23,9 +23,9 @@ static inline void set_color(const Color color){
 void regdump(const trv_cpu* cpu){
 	printf("\n ABI   Reg Hex      │ ABI   Reg Hex\n");
 	printf("────────────────────┼───────────────────\n");
+
 	for(unsigned int i = 0; i < 32; i++){
 		printf(" ");
-
 		switch(i){
 		case  0: printf("zero "); break; case  1: printf("ra   "); break;
 		case  2: printf("sp   "); break; case  3: printf("gp   "); break;
@@ -46,25 +46,23 @@ void regdump(const trv_cpu* cpu){
 		}
 
 		printf(" ");
-
 		set_color(BRIGHT_YELLOW);
-		i < 10 ? printf("x%d ", i) : printf("x%d", i);
+		printf(i < 10 ? "x%d " : "x%d", i);
 		set_color(RESET);
 
 		printf(" ");
-
 		if(cpu->regs[i]) set_color(BRIGHT_GREEN);
 		printf("%-8x", cpu->regs[i]);
 		set_color(RESET);
 
-		i % 2 ? printf(" \n") : printf(" │");
+		printf(i % 2 ? " \n" : " │");
 	}
 
-	//pc/x32 = additional entry in reg_dump table
+	printf(" pc    ");
 	set_color(BRIGHT_YELLOW);
-	printf(" pc    x32 ");
+	printf("x32");
 	if(cpu->pc) set_color(BRIGHT_GREEN);
-	printf("%-8x", cpu->pc);
+	printf(" %-8x", cpu->pc);
 	set_color(RESET);
 
 	printf(" │\n\n");
