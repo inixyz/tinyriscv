@@ -45,7 +45,7 @@ static inline void store32(u8* mem, const u32 addr, const u32 val){
 void tinyriscv_b_type(u32* pc, const u8 func3, const u32 x[32], const u8 rs1, 
 	const u8 rs2, const i16 imm){
 
-	pc -= 4;
+	*pc -= 4;
 
 	switch(func3){
 	case /*BEQ*/  0: if(x[rs1] == x[rs2]) *pc += (i32)imm; break; 
