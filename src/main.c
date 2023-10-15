@@ -42,7 +42,7 @@ void regdump(const trv_cpu* cpu){
 		case 24: printf("s8   "); break; case 25: printf("s9   "); break;
 		case 26: printf("s10  "); break; case 27: printf("s11  "); break;
 		case 28: printf("t3   "); break; case 29: printf("t4   "); break;
-		case 30: printf("t5   "); break; case 31: printf("t5   "); break;
+		case 30: printf("t5   "); break; case 31: printf("t6   "); break;
 		}
 
 		printf(" ");
