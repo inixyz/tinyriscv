@@ -105,29 +105,26 @@ void trv_I_type(const u8 func3, const u8 func7, u32 regs[32], const u8 rd,
 	} 
 }
 
-void trv_R_type(const u8 func3, const u8 func7, u32 regs[32], const u8 rd, 
+void tinyriscv_R_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
 	const u8 rs1, const u8 rs2){
 
+	#define ADD  (x[rd] = x[rs1] + x[rs2])
+	#define SUB  (x[rd] = x[rs1] - x[rs2])
+	#define SLL  (x[rd] = x[rs1] << (x[rs2] & 0x1f))
+	#define SLT  (x[rd] = (i32)x[rs1] < (i32)x[rs2])
+	#define SLTU (x[rd] = x[rs1] < x[rs2])
+	#define XOR  (x[rd] = x[rs1] ^ x[rs2])
+	#define SRL  (x[rd] = x[rs1] >> (x[rs2] & 0x1f))
+	#define SRA  (x[rd] = (i32)x[rs1] >> (x[rs2] & 0x1f))
+	#define OR   (x[rd] = x[rs1] | x[rs2])
+	#define AND  (x[rd] = x[rs1] & x[rs2])
+
 	switch(func3){
-	case /*ADD/SUB*/ 0x0:
-		if(func7 == /*ADD*/ 0x00) regs[rd] = regs[rs1] + regs[rs2];
-		else if(func7 == /*SUB*/ 0x20) regs[rd] = regs[rs1] - regs[rs2];
-		break;
-
-	case /*SLL*/ 0x1: regs[rd] = regs[rs1] << (regs[rs2] & 0x1f); break;
-	case /*SLT*/ 0x2: regs[rd] = (i32)regs[rs1] < (i32)regs[rs2]; break;
-	case /*SLTU*/ 0x3: regs[rd] = regs[rs1] < regs[rs2]; break;
-	case /*XOR*/ 0x4: regs[rd] = regs[rs1] ^ regs[rs2]; break;
-
-	case /*SRL/SRA*/ 0x5: 
-		if(func7 == /*SRL*/ 0x00) regs[rd] = regs[rs1] >> (regs[rs2] & 0x1f);
-		else if(func7 == /*SRA*/ 0x20){
-			regs[rd] = (i32)regs[rs1] >> (regs[rs2] & 0x1f);
-		}
-		break;
-
-	case /*OR*/ 0x6: regs[rd] = regs[rs1] | regs[rs2]; break;
-	case /*AND*/ 0x7: regs[rd] = regs[rs1] & regs[rs2]; break;
+	case 0: func7 ? SUB : ADD; break; 
+	case 1: SLL; break; case 2: SLT; break; 
+	case 3: SLTU; break; case 4: XOR; break;
+	case 5: func7 ? SRA : SRL; break;
+	case 6: OR; break; case 7: AND; break;
 	}
 }
 
