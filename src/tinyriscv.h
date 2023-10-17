@@ -45,15 +45,13 @@ static inline void store32(u8* mem, const u32 addr, const u32 val){
 void tinyriscv_b_type(u32* pc, const u8 func3, const u32 x[32], const u8 rs1, 
 	const u8 rs2, const i16 imm){
 
-	*pc -= 4;
-
 	switch(func3){
-	case /*BEQ*/  0: if(x[rs1] == x[rs2]) *pc += (i32)imm; break; 
-	case /*BNE*/  1: if(x[rs1] != x[rs2]) *pc += (i32)imm; break;
-	case /*BLT*/  4: if((i32)x[rs1] < (i32)x[rs2]) *pc += (i32)imm; break; 
-	case /*BGE*/  5: if((i32)x[rs1] >= (i32)x[rs2]) *pc += (i32)imm; break;
-	case /*BLTU*/ 6: if(x[rs1] < x[rs2]) *pc += (i32)imm; break; 
-	case /*BGEU*/ 7: if(x[rs1] >= x[rs2]) *pc += (i32)imm; break;
+	case /*BEQ*/  0: if(x[rs1] == x[rs2]) *pc += (i32)imm - 4; break; 
+	case /*BNE*/  1: if(x[rs1] != x[rs2]) *pc += (i32)imm - 4; break;
+	case /*BLT*/  4: if((i32)x[rs1] < (i32)x[rs2]) *pc += (i32)imm - 4; break; 
+	case /*BGE*/  5: if((i32)x[rs1] >= (i32)x[rs2]) *pc += (i32)imm - 4; break;
+	case /*BLTU*/ 6: if(x[rs1] < x[rs2]) *pc += (i32)imm - 4; break; 
+	case /*BGEU*/ 7: if(x[rs1] >= x[rs2]) *pc += (i32)imm - 4; break;
 	}
 }
 
