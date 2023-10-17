@@ -20,10 +20,23 @@ static inline void set_fg_color(const Color color){
 	printf("\x1b[%dm", color);
 }
 
+void help(const char* message){
+	if(strlen(message)) puts(message);
+
+	printf("Usage: tinyricv [OPTION] [VALUE] ...\n\n");
+	printf("  --help               Display this information.\n");
+	printf("  --bin <file>         Load <file> into memory.\n");
+	printf("  --mem_size <size>    Set memory to have <size> bytes.\n");
+	printf("  --regdump            Dump registers at execution halt.\n");
+	printf("  --memdump <addr>     Dump 256B of memory from <addr>.\n");
+
+	exit(0);
+}
+
 void regdump(const tinyriscv_hart* hart){
 	printf("\n");
 	printf(" ABI   Reg Hex      │ ABI   Reg Hex     \n");
-	printf("────────────────────┼───────────────────\n");
+	printf(" ───────────────────┼───────────────────\n");
 
 	const char abi[][6] = {
 		"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
@@ -56,22 +69,42 @@ void regdump(const tinyriscv_hart* hart){
 	printf(" │\n\n");
 }
 
-void help(const char* message){
-	if(strlen(message)) puts(message);
+void memdump(const tinyriscv_hart* hart, uint32_t addr){
+	addr -= tinyriscv_MEM_OFFSET;
+	if(addr + 256 > hart->mem_size) help("memdump: Address out of memory range.");
 
-	printf("Usage: tinyricv [OPTION] [VALUE] ...\n\n");
-	printf("  --help               Display this information.\n");
-	printf("  --bin <file>         Load <file> into memory.\n");
-	printf("  --mem_size <size>    Set memory to have <size> bytes.\n");
-	printf("  --regdump            Dump registers at execution halt.\n");
+	printf("\n");
+	printf(" Address  Memory                                          ASCII\n ");
+	for(unsigned int i = 0; i < 73; i++) printf("─");
+	printf("\n");
 
-	exit(0);
+	for(uint32_t end_addr = addr + 256; addr < end_addr; addr += 16){
+		set_fg_color(BRIGHT_YELLOW);
+		printf(" %.8x ", addr);
+		set_fg_color(RESET);
+
+		for(uint32_t i = addr; i < addr + 16; i++){
+			set_fg_color(hart->mem[i] ? BRIGHT_WHITE : BRIGHT_BLACK);
+			printf("%.2x ", hart->mem[i]);
+		}
+
+		for(uint32_t i = addr; i < addr + 16; i++){
+			const char c = hart->mem[i];
+			const unsigned int visible = c > 31 && c < 255 && c != 127;
+			set_fg_color(visible ? BRIGHT_WHITE : BRIGHT_BLACK);
+			printf("%c", visible ? c : '.');	
+		}
+
+		printf("\n");
+	}
+	printf("\n");
 }
 
 int main(int argc, char** argv){
 	char file_path[256] = "";
 	size_t mem_size = 4096;
-	unsigned int do_regdump = 0;
+	uint32_t dump_addr = 0;
+	unsigned int do_regdump = 0, do_memdump = 0;
 
  	//command line arguments
 	if(argc < 2) help("Not enough arguments.");
@@ -84,9 +117,14 @@ int main(int argc, char** argv){
 		}
 		else if(!strcmp(argv[i], "--mem_size")){
 			assert("Invalid [mem_size] value." && argv[i + 1]);
-			mem_size = atoi(argv[i++ + 1]);
+			mem_size = strtol(argv[i++ + 1], NULL, 0);
 		}
 		else if(!strcmp(argv[i], "--regdump")) do_regdump = 1;
+		else if(!strcmp(argv[i], "--memdump")){
+			assert("Invalid [addr] value." && argv[i + 1]);
+			dump_addr = strtol(argv[i++ + 1], NULL, 0);
+			do_memdump = 1;
+		}
 		else{
 			printf("Invalid option: %s\n", argv[i]);			
 			printf("Try 'tinyriscv --help' for more information.\n");
@@ -115,6 +153,7 @@ int main(int argc, char** argv){
 	while(hart.pc < file_size + tinyriscv_MEM_OFFSET) tinyriscv_step(&hart);
 
 	if(do_regdump) regdump(&hart);
+	if(do_memdump) memdump(&hart, dump_addr);
 
 	//cleanup
 	free(hart.mem);
