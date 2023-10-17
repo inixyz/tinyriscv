@@ -80,7 +80,7 @@ void memdump(const tinyriscv_hart* hart, uint32_t addr){
 
 	for(uint32_t end_addr = addr + 256; addr < end_addr; addr += 16){
 		set_fg_color(BRIGHT_YELLOW);
-		printf(" %.8x ", addr);
+		printf(" %.8x ", addr + tinyriscv_MEM_OFFSET);
 		set_fg_color(RESET);
 
 		for(uint32_t i = addr; i < addr + 16; i++){
