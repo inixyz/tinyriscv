@@ -21,7 +21,7 @@ static inline void set_fg_color(const Color color){
 }
 
 void help(const char* message){
-	if(strlen(message)) puts(message);
+	if(message) printf("%s\n\n", message);
 
 	printf("Usage: tinyricv [OPTION] [VALUE] ...\n\n");
 	printf("  --help               Display this information.\n");
@@ -112,16 +112,16 @@ int main(int argc, char** argv){
 	for(unsigned int i = 1; i < argc; i++){
 		if(!strcmp(argv[i], "--help")) help(NULL);
 		else if(!strcmp(argv[i], "--bin")){
-			assert("Invalid file path." && argv[i + 1]);
+			if(i + 1 >= argc) help("Invalid file path."); 
 			strncpy(file_path, argv[i++ + 1], 256);
 		}
 		else if(!strcmp(argv[i], "--mem_size")){
-			assert("Invalid [mem_size] value." && argv[i + 1]);
+			if(i + 1 >= argc) help("Invalid [mem_size] value.");
 			mem_size = strtol(argv[i++ + 1], NULL, 0);
 		}
 		else if(!strcmp(argv[i], "--regdump")) do_regdump = 1;
 		else if(!strcmp(argv[i], "--memdump")){
-			assert("Invalid [addr] value." && argv[i + 1]);
+			if(i + 1 >= argc) help("Invalid [dump_addr] value.");
 			dump_addr = strtol(argv[i++ + 1], NULL, 0);
 			do_memdump = 1;
 		}
