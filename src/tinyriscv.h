@@ -18,29 +18,43 @@ typedef struct{
 
 const u32 tinyriscv_MEM_OFFSET = 0x80000000;
 
+////////////////////////////////////////////////////////////////////////////////
+
 static inline u8 load8(const u8* mem, const u32 addr){
 	return mem[addr - tinyriscv_MEM_OFFSET];
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 static inline u16 load16(const u8* mem, const u32 addr){
 	return *(u16*)(mem + addr - tinyriscv_MEM_OFFSET);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 static inline u32 load32(const u8* mem, const u32 addr){
 	return *(u32*)(mem + addr - tinyriscv_MEM_OFFSET);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 static inline void store8(u8* mem, const u32 addr, const u8 val){
 	mem[addr - tinyriscv_MEM_OFFSET] = val;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 static inline void store16(u8* mem, const u32 addr, const u16 val){
 	*(u16*)(mem + addr - tinyriscv_MEM_OFFSET) = val;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 static inline void store32(u8* mem, const u32 addr, const u32 val){
 	*(u32*)(mem + addr - tinyriscv_MEM_OFFSET) = val;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void tinyriscv_b_type(u32* pc, const u8 func3, const u32 x[32], const u8 rs1, 
 	const u8 rs2, const i16 imm){
@@ -54,6 +68,8 @@ void tinyriscv_b_type(u32* pc, const u8 func3, const u32 x[32], const u8 rs1,
 	case /*BGEU*/ 7: if(x[rs1] >= x[rs2]) *pc += (i32)imm - 4; break;
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void tinyriscv_l_type(const u8* mem, const u8 func3, u32 x[32], const u8 rd, 
 	const u8 rs1, const i16 imm){
@@ -69,6 +85,8 @@ void tinyriscv_l_type(const u8* mem, const u8 func3, u32 x[32], const u8 rd,
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void tinyriscv_s_type(u8* mem, const u8 func3, const u32 x[32], const u8 rs1, 
 	const u8 rs2, const i16 imm){
 
@@ -80,6 +98,8 @@ void tinyriscv_s_type(u8* mem, const u8 func3, const u32 x[32], const u8 rs1,
 	case /*SW*/ 2: store32(mem, addr, x[rs2]); break;
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void tinyriscv_i_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd, 
 	const u8 rs1, const i16 imm, const u8 shamt){
@@ -103,6 +123,8 @@ void tinyriscv_i_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void tinyriscv_r_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
 	const u8 rs1, const u8 rs2){
 
@@ -125,6 +147,8 @@ void tinyriscv_r_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
 	case 6: OR; break; case 7: AND; break;
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void tinyriscv_step(tinyriscv_hart* hart){
 	//fetch
@@ -155,9 +179,9 @@ void tinyriscv_step(tinyriscv_hart* hart){
 	case /*AUIPC*/ 0x17: hart->x[rd] = hart->pc - 4 + (inst & 0xfffff000); break;
 	case /*JAL*/   0x6f: hart->x[rd] = hart->pc; hart->pc += imm_j - 4; break;
 	case /*JALR*/  0x67: 
-		const u32 last_pc = hart->pc;
+		const u32 ret_addr = hart->pc;
 		hart->pc = (hart->x[rs1] + (i32)imm_i) & 0xfffffffe;
-		hart->x[rd] = last_pc;
+		hart->x[rd] = ret_addr;
 		break;
 
 	case 0x63: tinyriscv_b_type(&hart->pc, func3, hart->x, rs1, rs2, imm_b); break;
@@ -168,9 +192,13 @@ void tinyriscv_step(tinyriscv_hart* hart){
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void tinyriscv_init(tinyriscv_hart* hart){
 	hart->x[2] = tinyriscv_MEM_OFFSET + hart->mem_size;
 	hart->pc = tinyriscv_MEM_OFFSET;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 #endif //TINYRISCV_H
