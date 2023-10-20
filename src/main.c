@@ -33,6 +33,8 @@ void help(const char* message){
 	exit(0);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+
 void regdump(const tinyriscv_hart* hart){
 	printf("\n");
 	printf(" ABI   Reg Hex      │ ABI   Reg Hex     \n");
