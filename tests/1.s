@@ -14,23 +14,20 @@ main:
 	li	a5,-2147483648
 	addi	a5,a5,240
 	sw	a5,-20(s0)
-	sw	zero,-24(s0)
+	lw	a5,-20(s0)
+	li	a4,1
+	sw	a4,0(a5)
 	j	.L2
 .L3:
-	lw	a5,-24(s0)
-	andi	a4,a5,0xff
 	lw	a5,-20(s0)
-	sb	a4,0(a5)
+	lw	a5,0(a5)
+	addi	a4,a5,1
 	lw	a5,-20(s0)
-	addi	a5,a5,1
-	sw	a5,-20(s0)
-	lw	a5,-24(s0)
-	addi	a5,a5,1
-	sw	a5,-24(s0)
+	sw	a4,0(a5)
 .L2:
-	lw	a4,-24(s0)
-	li	a5,15
-	ble	a4,a5,.L3
+	lw	a5,-20(s0)
+	lw	a5,0(a5)
+	bne	a5,zero,.L3
 	li	a5,0
 	mv	a0,a5
 	lw	s0,28(sp)
