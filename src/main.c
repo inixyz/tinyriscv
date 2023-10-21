@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include "tinyriscv.h"
 
@@ -24,6 +26,30 @@ static inline void set_fg_color(const Color color){
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static inline void clear_screen(void){
+	printf("\x1b[H\x1b[J");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+char getch(void)
+{
+	struct termios old_term, new_term;
+
+	tcgetattr(STDIN_FILENO, &old_term);
+	new_term = old_term;
+
+	new_term.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &new_term);
+
+	char c = getchar();
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &old_term);
+	return c;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void help(const char* message){
 	if(message) printf("%s\n\n", message);
 
@@ -33,6 +59,7 @@ void help(const char* message){
 	printf("  --mem_size <size>    Set memory to have <size> bytes.\n");
 	printf("  --regdump            Dump registers at execution halt.\n");
 	printf("  --memdump <addr>     Dump 256B of memory from <addr>.\n");
+	printf("  --debug              Enable debug mode individual astep.\n");
 
 	exit(0);
 }
@@ -105,6 +132,8 @@ void memdump(const tinyriscv_hart* hart, uint32_t addr){
 
 		printf("\n");
 	}
+
+	set_fg_color(RESET);
 	printf("\n");
 }
 
@@ -137,7 +166,7 @@ int main(int argc, char** argv){
 	char file_path[256] = "";
 	size_t mem_size = 4096;
 	uint32_t dump_addr = 0;
-	unsigned int do_regdump = 0, do_memdump = 0;
+	unsigned int do_regdump = 0, do_memdump = 0, do_debug = 0;
 
  	//command line arguments
 	if(argc < 2) help("Not enough arguments.");
@@ -158,6 +187,7 @@ int main(int argc, char** argv){
 			dump_addr = strtol(argv[i++ + 1], NULL, 0);
 			do_memdump = 1;
 		}
+		else if(!strcmp(argv[i], "--debug")) do_debug = 1;
 		else{
 			printf("Invalid option: %s\n", argv[i]);			
 			printf("Try 'tinyriscv --help' for more information.\n");
@@ -172,7 +202,20 @@ int main(int argc, char** argv){
 
 	//program execution
 	tinyriscv_init(&hart);
-	while(tinyriscv_valid_step(&hart)) tinyriscv_step(&hart);
+	if(do_debug){
+		while(tinyriscv_valid_step(&hart)){
+			clear_screen();
+
+			if(do_regdump) regdump(&hart);
+			if(do_memdump) memdump(&hart, dump_addr);
+
+			printf("\nPress enter to step.\n");
+			while(getch() != 10);
+
+			tinyriscv_step(&hart);
+		}
+	}
+	else while(tinyriscv_valid_step(&hart)) tinyriscv_step(&hart);
 
 	if(do_regdump) regdump(&hart);
 	if(do_memdump) memdump(&hart, dump_addr);
