@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "tinyriscv.h"
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
+
+#include "tinyriscv.h"
 
 typedef enum{
 	RESET   =  0, DEFAULT        = 39,
@@ -16,9 +16,13 @@ typedef enum{
 	WHITE   = 37, BRIGHT_WHITE   = 97
 }Color;
 
+////////////////////////////////////////////////////////////////////////////////
+
 static inline void set_fg_color(const Color color){
 	printf("\x1b[%dm", color);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void help(const char* message){
 	if(message) printf("%s\n\n", message);
@@ -33,7 +37,7 @@ void help(const char* message){
 	exit(0);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void regdump(const tinyriscv_hart* hart){
 	printf("\n");
@@ -71,6 +75,8 @@ void regdump(const tinyriscv_hart* hart){
 	printf(" │\n\n");
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void memdump(const tinyriscv_hart* hart, uint32_t addr){
 	addr -= tinyriscv_MEM_OFFSET;
 	if(addr + 256 > hart->mem_size) help("memdump: Address out of memory range.");
@@ -101,6 +107,31 @@ void memdump(const tinyriscv_hart* hart, uint32_t addr){
 	}
 	printf("\n");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void load_mem_from_file(tinyriscv_hart* hart, const char* file_path){
+	FILE* file = fopen(file_path, "rb");
+	if(!file){
+		perror("ERROR: Can't open file");
+		exit(-1);
+	}
+
+	fseek(file, 0, SEEK_END);
+	const unsigned int file_size = ftell(file);
+	rewind(file);
+
+	if(file_size > hart->mem_size){
+		printf("ERROR: [file] is bigger than allocated memory.");
+		fclose(file);
+		exit(-1);
+	}
+
+	fread(hart->mem, 1, file_size, file);
+	fclose(file);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv){
 	char file_path[256] = "";
@@ -136,19 +167,8 @@ int main(int argc, char** argv){
 	tinyriscv_hart hart;
 	hart.mem = calloc(hart.mem_size = mem_size, 1);
 
-	//file handling
-	FILE* file = fopen(file_path, "rb");
-	if(!file){
-		perror("ERROR: Can't open file");
-		exit(-1);
-	}
-
 	//load program into memory
-	fseek(file, 0, SEEK_END);
-	const unsigned int file_size = ftell(file);
-	rewind(file);
-	fread(hart.mem, 1, file_size, file);
-	fclose(file);
+	load_mem_from_file(&hart, file_path);
 
 	//program execution
 	tinyriscv_init(&hart);
@@ -160,3 +180,5 @@ int main(int argc, char** argv){
 	//cleanup
 	free(hart.mem);
 }
+
+////////////////////////////////////////////////////////////////////////////////
