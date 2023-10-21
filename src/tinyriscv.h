@@ -150,6 +150,22 @@ void tinyriscv_r_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void tinyriscv_init(tinyriscv_hart* hart){
+	hart->x[2] = tinyriscv_MEM_OFFSET + hart->mem_size;
+	hart->pc = tinyriscv_MEM_OFFSET;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+u8 tinyriscv_valid_step(const tinyriscv_hart* hart){
+	if(!load32(hart->mem, hart->pc)) return 0;
+	if(hart->pc >= hart->mem_size + tinyriscv_MEM_OFFSET) return 0;
+	
+	return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void tinyriscv_step(tinyriscv_hart* hart){
 	//fetch
 	const u32 inst = load32(hart->mem, hart->pc);
@@ -190,13 +206,6 @@ void tinyriscv_step(tinyriscv_hart* hart){
 	case 0x13: tinyriscv_i_type(func3, func7, hart->x, rd, rs1, imm_i, rs2); break;
 	case 0x33: tinyriscv_r_type(func3, func7, hart->x, rd, rs1, rs2); break;
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void tinyriscv_init(tinyriscv_hart* hart){
-	hart->x[2] = tinyriscv_MEM_OFFSET + hart->mem_size;
-	hart->pc = tinyriscv_MEM_OFFSET;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

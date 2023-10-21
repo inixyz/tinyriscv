@@ -152,7 +152,7 @@ int main(int argc, char** argv){
 
 	//program execution
 	tinyriscv_init(&hart);
-	while(hart.pc < file_size + tinyriscv_MEM_OFFSET) tinyriscv_step(&hart);
+	while(tinyriscv_valid_step(&hart)) tinyriscv_step(&hart);
 
 	if(do_regdump) regdump(&hart);
 	if(do_memdump) memdump(&hart, dump_addr);
