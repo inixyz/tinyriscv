@@ -56,10 +56,10 @@ static inline void store32(u8* mem, const u32 addr, const u32 val){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_b_type(u32* pc, const u8 func3, const u32 x[32], const u8 rs1, 
+void tinyriscv_b_type(u32* pc, const u8 funct3, const u32 x[32], const u8 rs1, 
 	const u8 rs2, const i16 imm){
 
-	switch(func3){
+	switch(funct3){
 	case /*BEQ*/  0: if(x[rs1] == x[rs2]) *pc += (i32)imm - 4; break; 
 	case /*BNE*/  1: if(x[rs1] != x[rs2]) *pc += (i32)imm - 4; break;
 	case /*BLT*/  4: if((i32)x[rs1] < (i32)x[rs2]) *pc += (i32)imm - 4; break; 
@@ -71,12 +71,12 @@ void tinyriscv_b_type(u32* pc, const u8 func3, const u32 x[32], const u8 rs1,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_l_type(const u8* mem, const u8 func3, u32 x[32], const u8 rd, 
+void tinyriscv_l_type(const u8* mem, const u8 funct3, u32 x[32], const u8 rd, 
 	const u8 rs1, const i16 imm){
 
 	const u32 addr = x[rs1] + (i32)imm;
 
-	switch(func3){
+	switch(funct3){
 	case /*LB*/  0: x[rd] = (i32)(i8)load8(mem, addr); break;
 	case /*LH*/  1: x[rd] = (i32)(i16)load16(mem, addr); break;
 	case /*LW*/  2: x[rd] = load32(mem, addr); break;
@@ -87,12 +87,12 @@ void tinyriscv_l_type(const u8* mem, const u8 func3, u32 x[32], const u8 rd,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_s_type(u8* mem, const u8 func3, const u32 x[32], const u8 rs1, 
+void tinyriscv_s_type(u8* mem, const u8 funct3, const u32 x[32], const u8 rs1, 
 	const u8 rs2, const i16 imm){
 
 	const u32 addr = x[rs1] + (i32)imm;
 
-	switch(func3){
+	switch(funct3){
 	case /*SB*/ 0: store8(mem, addr, x[rs2]); break;
 	case /*SH*/ 1: store16(mem, addr, x[rs2]); break;
 	case /*SW*/ 2: store32(mem, addr, x[rs2]); break;
@@ -101,7 +101,7 @@ void tinyriscv_s_type(u8* mem, const u8 func3, const u32 x[32], const u8 rs1,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_i_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd, 
+void tinyriscv_i_type(const u8 funct3, const u8 funct7, u32 x[32], const u8 rd, 
 	const u8 rs1, const i16 imm, const u8 shamt){
 
 	#define ADDI  (x[rd] = x[rs1] + (i32)imm)
@@ -114,18 +114,18 @@ void tinyriscv_i_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
 	#define SRLI  (x[rd] = x[rs1] >> shamt)
 	#define SRAI  (x[rd] = (i32)x[rs1] >> shamt)
 
-	switch(func3){
+	switch(funct3){
 	case 0: ADDI; break; case 1: SLLI; break;
 	case 2: SLTI; break; case 3: SLTIU; break;
 	case 4: XORI; break;
-	case 5: func7 ? SRAI : SRLI; break;
+	case 5: funct7 ? SRAI : SRLI; break;
 	case 6: ORI; break; case 7: ANDI; break;
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_r_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
+void tinyriscv_r_type(const u8 funct3, const u8 funct7, u32 x[32], const u8 rd,
 	const u8 rs1, const u8 rs2){
 
 	#define ADD  (x[rd] = x[rs1] + x[rs2])
@@ -139,11 +139,11 @@ void tinyriscv_r_type(const u8 func3, const u8 func7, u32 x[32], const u8 rd,
 	#define OR   (x[rd] = x[rs1] | x[rs2])
 	#define AND  (x[rd] = x[rs1] & x[rs2])
 
-	switch(func3){
-	case 0: func7 ? SUB : ADD; break; 
+	switch(funct3){
+	case 0: funct7 ? SUB : ADD; break; 
 	case 1: SLL; break; case 2: SLT; break; 
 	case 3: SLTU; break; case 4: XOR; break;
-	case 5: func7 ? SRA : SRL; break;
+	case 5: funct7 ? SRA : SRL; break;
 	case 6: OR; break; case 7: AND; break;
 	}
 }
@@ -173,8 +173,8 @@ void tinyriscv_step(tinyriscv_hart* hart){
 
 	//decode
 	#define opcode (inst & 0x7f)
-	#define func3 (inst >> 12 & 0x7)
-	#define func7 (inst >> 25 & 0x7f)
+	#define funct3 (inst >> 12 & 0x7)
+	#define funct7 (inst >> 25 & 0x7f)
 	#define rd (inst >> 7 & 0x1f)
 	#define rs1 (inst >> 15 & 0x1f)
 	#define rs2 (inst >> 20 & 0x1f)
@@ -200,11 +200,11 @@ void tinyriscv_step(tinyriscv_hart* hart){
 		hart->x[rd] = ret_addr;
 		break;
 
-	case 0x63: tinyriscv_b_type(&hart->pc, func3, hart->x, rs1, rs2, imm_b); break;
-	case 0x03: tinyriscv_l_type(hart->mem, func3, hart->x, rd, rs1, imm_i); break;
-	case 0x23: tinyriscv_s_type(hart->mem, func3, hart->x, rs1, rs2, imm_s); break;
-	case 0x13: tinyriscv_i_type(func3, func7, hart->x, rd, rs1, imm_i, rs2); break;
-	case 0x33: tinyriscv_r_type(func3, func7, hart->x, rd, rs1, rs2); break;
+	case 0x63: tinyriscv_b_type(&hart->pc, funct3, hart->x, rs1, rs2, imm_b); break;
+	case 0x03: tinyriscv_l_type(hart->mem, funct3, hart->x, rd, rs1, imm_i); break;
+	case 0x23: tinyriscv_s_type(hart->mem, funct3, hart->x, rs1, rs2, imm_s); break;
+	case 0x13: tinyriscv_i_type(funct3, funct7, hart->x, rd, rs1, imm_i, rs2); break;
+	case 0x33: tinyriscv_r_type(funct3, funct7, hart->x, rd, rs1, rs2); break;
 	}
 }
 
