@@ -221,7 +221,22 @@ void step(){
 	switch(opcode){
 	case /*R-type*/ 0x33:
 
-		
+		switch(func3){
+		case /*ADDI*/ 0x0: x[rd] = x[rs1] + (i32)imm; break;
+		case /*SLTI*/ 0x2000: x[rd] = (i32)x[rs1] < (i32)imm; break;
+		case /*SLTIU*/ 0x3000: x[rd] = x[rs1] < (u32)(i32)imm; break;
+		case /*XORI*/ 0x4000: x[rd] = x[rs1] ^ (i32)imm; break;
+		case /*ORI*/ 0x6000: x[rd] = x[rs1] | (i32)imm; break;
+		case /*ANDI*/ 0x7000: x[rd] = x[rs1] & (i32)imm; break;
+		default: 
+			switch(funct7 | funct3){
+			case /*SLLI*/ 0x1000: x[rd] = x[rs1] << rs2; break;
+			case /*SRLI*/ 0x5000: x[rd] = x[rs1] >> rs2; break;
+			case /*SRAI*/ 0x40005000: x[rd] = (i32)x[rs1] >> rs2; break;
+			}
+		}
+
+		//TODO put this in inline functions , R-type() etc
 
 		switch(funct7 | funct3){
 		case /*ADD*/ 0x0: x[rd] = x[rs1] + x[rs2]; break;
