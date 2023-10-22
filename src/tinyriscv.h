@@ -211,3 +211,31 @@ void tinyriscv_step(tinyriscv_hart* hart){
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif //TINYRISCV_H
+
+#ifdef TESTING
+
+void step(){
+
+	//func7 and func3 are just bitmasked from the whole inst
+
+	switch(opcode){
+	case /*R-type*/ 0x33:
+
+		
+
+		switch(funct7 | funct3){
+		case /*ADD*/ 0x0: x[rd] = x[rs1] + x[rs2]; break;
+		case /*SUB*/ 0x40000000: x[rd] = x[rs1] - x[rs2]; break;
+		case /*SLL*/ 0x1000: x[rd] = x[rs1] << (x[rs2] & 0x1f); break;
+		case /*SLT*/ 0x2000: x[rd] = (i32)x[rs1] < (i32)x[rs2]; break;
+		case /*SLTU*/ 0x3000: x[rd] = x[rs1] < x[rs2]; break;
+		case /*XOR*/ 0x4000: x[rd] = x[rs1] ^ x[rs2]; break;
+		case /*SRL*/ 0x5000: x[rd] = x[rs1] >> (x[rs2] & 0x1f); break;
+		case /*SRA*/ 0x40005000: x[rd] = (i32)x[rs1] >> (x[rs2] & 0x1f); break;
+		case /*OR*/ 0x6000: x[rd] = x[rs1] | x[rs2]; break;
+		case /*AND*/ 0x7000: x[rd] = x[rs1] & x[rs2]; break;
+		}
+	}
+}
+
+#endif
