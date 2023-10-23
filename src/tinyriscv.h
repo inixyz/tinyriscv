@@ -3,13 +3,9 @@
 
 #include <stdint.h>
 
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-
-typedef int8_t i8;
-typedef int16_t i16;
-typedef int32_t i32;
+typedef uint8_t   u8; typedef int8_t   i8;
+typedef uint16_t u16; typedef int16_t i16;
+typedef uint32_t u32; typedef int32_t i32;
 
 typedef struct{
 	u32 x[32], pc, mem_size;
@@ -18,41 +14,7 @@ typedef struct{
 
 const u32 tinyriscv_MEM_OFFSET = 0x80000000;
 
-////////////////////////////////////////////////////////////////////////////////
-
-static inline u8 load8(const u8* mem, const u32 addr){
-	return mem[addr - tinyriscv_MEM_OFFSET];
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static inline u16 load16(const u8* mem, const u32 addr){
-	return *(u16*)(mem + addr - tinyriscv_MEM_OFFSET);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static inline u32 load32(const u8* mem, const u32 addr){
-	return *(u32*)(mem + addr - tinyriscv_MEM_OFFSET);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static inline void store8(u8* mem, const u32 addr, const u8 val){
-	mem[addr - tinyriscv_MEM_OFFSET] = val;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static inline void store16(u8* mem, const u32 addr, const u16 val){
-	*(u16*)(mem + addr - tinyriscv_MEM_OFFSET) = val;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static inline void store32(u8* mem, const u32 addr, const u32 val){
-	*(u32*)(mem + addr - tinyriscv_MEM_OFFSET) = val;
-}
+#define MEM(size, mem, addr) (*(u##size*)(mem + addr - tinyriscv_MEM_OFFSET))
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,17 +33,19 @@ void tinyriscv_b_type(u32* pc, const u8 funct3, const u32 x[32], const u8 rs1,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//TODO change parameter order (funct3 first etc)...
+
 void tinyriscv_l_type(const u8* mem, const u8 funct3, u32 x[32], const u8 rd, 
 	const u8 rs1, const i16 imm){
 
 	const u32 addr = x[rs1] + (i32)imm;
 
 	switch(funct3){
-	case /*LB*/  0: x[rd] = (i32)(i8)load8(mem, addr); break;
-	case /*LH*/  1: x[rd] = (i32)(i16)load16(mem, addr); break;
-	case /*LW*/  2: x[rd] = load32(mem, addr); break;
-	case /*LBU*/ 4: x[rd] = load8(mem, addr); break;
-	case /*LHU*/ 5: x[rd] = load16(mem, addr); break;
+	case /*LB*/  0: x[rd] = (i32)(i8)MEM(8, mem, addr); break;
+	case /*LH*/  1: x[rd] = (i32)(i16)MEM(16, mem, addr); break;
+	case /*LW*/  2: x[rd] = MEM(32, mem, addr); break;
+	case /*LBU*/ 4: x[rd] = MEM(8, mem, addr); break;
+	case /*LHU*/ 5: x[rd] = MEM(16, mem, addr); break;
 	}
 }
 
