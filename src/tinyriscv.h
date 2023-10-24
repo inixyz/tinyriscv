@@ -18,8 +18,9 @@ const u32 tinyriscv_MEM_OFFSET = 0x80000000;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_B_type(const u8 funct3, const u32* x, u32* pc, const u8 rs1, 
-	const u8 rs2, const i16 imm){
+__attribute__((always_inline)) 
+inline void tinyriscv_B_type(const u8 funct3, const u32* x, u32* pc, 
+	const u8 rs1, const u8 rs2, const i16 imm){
 
 	switch(funct3){
 	case /*BEQ*/  0: if(x[rs1] == x[rs2]) *pc += (i32)imm - 4; break; 
@@ -33,8 +34,9 @@ void tinyriscv_B_type(const u8 funct3, const u32* x, u32* pc, const u8 rs1,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_L_type(const u8 funct3, u32* x, const u8* mem, const u8 rd, 
-	const u8 rs1, const i16 imm){
+__attribute__((always_inline)) 
+inline void tinyriscv_L_type(const u8 funct3, u32* x, const u8* mem, 
+	const u8 rd, const u8 rs1, const i16 imm){
 
 	const u32 addr = x[rs1] + (i32)imm;
 
@@ -49,8 +51,9 @@ void tinyriscv_L_type(const u8 funct3, u32* x, const u8* mem, const u8 rd,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_S_type(const u8 funct3, const u32* x, u8* mem, const u8 rs1, 
-	const u8 rs2, const i16 imm){
+__attribute__((always_inline)) 
+inline void tinyriscv_S_type(const u8 funct3, const u32* x, u8* mem, 
+	const u8 rs1, const u8 rs2, const i16 imm){
 
 	const u32 addr = x[rs1] + (i32)imm;
 
@@ -63,8 +66,9 @@ void tinyriscv_S_type(const u8 funct3, const u32* x, u8* mem, const u8 rs1,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_I_type(const u8 funct3, const u8 funct7, u32* x, const u8 rd, 
-	const u8 rs1, const i16 imm, const u8 shamt){
+__attribute__((always_inline)) 
+inline void tinyriscv_I_type(const u8 funct3, const u8 funct7, u32* x,
+	const u8 rd, const u8 rs1, const i16 imm, const u8 shamt){
 
 	switch(funct3){
 	case /*ADDI*/  0: x[rd] = x[rs1] + (i32)imm; break;
@@ -84,8 +88,9 @@ void tinyriscv_I_type(const u8 funct3, const u8 funct7, u32* x, const u8 rd,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_R_type(const u8 funct3, const u8 funct7, u32* x, const u8 rd,
-	const u8 rs1, const u8 rs2){
+__attribute__((always_inline)) 
+inline void tinyriscv_R_type(const u8 funct3, const u8 funct7, u32* x, 
+	const u8 rd, const u8 rs1, const u8 rs2){
 
 	switch(funct7 << 3 | funct3){
 	case /*ADD*/  0x000: x[rd] = x[rs1] + x[rs2]; break;
@@ -99,7 +104,7 @@ void tinyriscv_R_type(const u8 funct3, const u8 funct7, u32* x, const u8 rd,
 	case /*OR*/   0x006: x[rd] = x[rs1] | x[rs2]; break;
 	case /*AND*/  0x007: x[rd] = x[rs1] & x[rs2]; break;
 	}
-}
+}	
 
 ////////////////////////////////////////////////////////////////////////////////
 
