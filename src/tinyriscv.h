@@ -111,9 +111,8 @@ void tinyriscv_init(tinyriscv_hart* hart){
 ////////////////////////////////////////////////////////////////////////////////
 
 u8 tinyriscv_valid_step(const tinyriscv_hart* hart){
-	if(!load32(hart->mem, hart->pc)) return 0;
+	if(!MEM(32, hart->mem, hart->pc)) return 0;
 	if(hart->pc >= hart->mem_size + tinyriscv_MEM_OFFSET) return 0;
-	
 	return 1;
 }
 
@@ -121,7 +120,7 @@ u8 tinyriscv_valid_step(const tinyriscv_hart* hart){
 
 void tinyriscv_step(tinyriscv_hart* hart){
 	//fetch
-	const u32 inst = load32(hart->mem, hart->pc);
+	const u32 inst = MEM(32, hart->mem, hart->pc);
 	hart->pc += 4;
 
 	//decode
@@ -144,20 +143,43 @@ void tinyriscv_step(tinyriscv_hart* hart){
 	hart->x[0] = 0;
 
 	switch(opcode){
-	case /*LUI*/   0x37: hart->x[rd] = inst & 0xfffff000; break;
-	case /*AUIPC*/ 0x17: hart->x[rd] = hart->pc - 4 + (inst & 0xfffff000); break;
-	case /*JAL*/   0x6f: hart->x[rd] = hart->pc; hart->pc += imm_j - 4; break;
+	case /*LUI*/   0x37: 
+		hart->x[rd] = inst & 0xfffff000; 
+		break;
+
+	case /*AUIPC*/ 0x17: 
+		hart->x[rd] = hart->pc - 4 + (inst & 0xfffff000); 
+		break;
+
+	case /*JAL*/   0x6f: 
+		hart->x[rd] = hart->pc; hart->pc += imm_j - 4; 
+		break;
+
 	case /*JALR*/  0x67: 
 		const u32 ret_addr = hart->pc;
 		hart->pc = (hart->x[rs1] + (i32)imm_i) & 0xfffffffe;
 		hart->x[rd] = ret_addr;
 		break;
 
-	case 0x63: tinyriscv_b_type(&hart->pc, funct3, hart->x, rs1, rs2, imm_b); break;
-	case 0x03: tinyriscv_l_type(hart->mem, funct3, hart->x, rd, rs1, imm_i); break;
-	case 0x23: tinyriscv_s_type(hart->mem, funct3, hart->x, rs1, rs2, imm_s); break;
-	case 0x13: tinyriscv_i_type(funct3, funct7, hart->x, rd, rs1, imm_i, rs2); break;
-	case 0x33: tinyriscv_r_type(funct3, funct7, hart->x, rd, rs1, rs2); break;
+	case /*B-type*/ 0x63: 
+		tinyriscv_B_type(funct3, hart->x, &hart->pc, rs1, rs2, imm_b); 
+		break;
+
+	case /*L-type*/ 0x03: 
+		tinyriscv_L_type(funct3, hart->x, hart->mem, rd, rs1, imm_i); 
+		break;
+
+	case /*S-type*/ 0x23: 
+		tinyriscv_S_type(funct3, hart->x, hart->mem, rs1, rs2, imm_s);
+		break;
+
+	case /*I-type*/ 0x13: 
+		tinyriscv_I_type(funct3, funct7, hart->x, rd, rs1, imm_i, rs2); 
+		break;
+
+	case /*R-type*/ 0x33: 
+		tinyriscv_R_type(funct3, funct7, hart->x, rd, rs1, rs2); 
+		break;
 	}
 }
 
