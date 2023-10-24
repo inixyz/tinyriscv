@@ -18,7 +18,7 @@ const u32 tinyriscv_MEM_OFFSET = 0x80000000;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_b_type(u32* pc, const u8 funct3, const u32 x[32], const u8 rs1, 
+void tinyriscv_B_type(const u8 funct3, const u32* x, u32* pc, const u8 rs1, 
 	const u8 rs2, const i16 imm){
 
 	switch(funct3){
@@ -33,9 +33,7 @@ void tinyriscv_b_type(u32* pc, const u8 funct3, const u32 x[32], const u8 rs1,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//TODO change parameter order (funct3 first etc)...
-
-void tinyriscv_l_type(const u8* mem, const u8 funct3, u32 x[32], const u8 rd, 
+void tinyriscv_L_type(const u8 funct3, u32* x, const u8* mem, const u8 rd, 
 	const u8 rs1, const i16 imm){
 
 	const u32 addr = x[rs1] + (i32)imm;
@@ -44,22 +42,22 @@ void tinyriscv_l_type(const u8* mem, const u8 funct3, u32 x[32], const u8 rd,
 	case /*LB*/  0: x[rd] = (i32)(i8)MEM(8, mem, addr); break;
 	case /*LH*/  1: x[rd] = (i32)(i16)MEM(16, mem, addr); break;
 	case /*LW*/  2: x[rd] = MEM(32, mem, addr); break;
-	case /*LBU*/ 4: x[rd] = MEM(8, mem, addr); break;
+	case /*LBU*/ 4: x[rd] = MEM( 8, mem, addr); break;
 	case /*LHU*/ 5: x[rd] = MEM(16, mem, addr); break;
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_s_type(u8* mem, const u8 funct3, const u32 x[32], const u8 rs1, 
+void tinyriscv_S_type(const u8 funct3, const u32* x, u8* mem, const u8 rs1, 
 	const u8 rs2, const i16 imm){
 
 	const u32 addr = x[rs1] + (i32)imm;
 
 	switch(funct3){
-	case /*SB*/ 0: store8(mem, addr, x[rs2]); break;
-	case /*SH*/ 1: store16(mem, addr, x[rs2]); break;
-	case /*SW*/ 2: store32(mem, addr, x[rs2]); break;
+	case /*SB*/ 0: MEM( 8, mem, addr) = x[rs2]; break;
+	case /*SH*/ 1: MEM(16, mem, addr) = x[rs2]; break;
+	case /*SW*/ 2: MEM(32, mem, addr) = x[rs2]; break;
 	}
 }
 
@@ -89,26 +87,20 @@ void tinyriscv_i_type(const u8 funct3, const u8 funct7, u32 x[32], const u8 rd,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_r_type(const u8 funct3, const u8 funct7, u32 x[32], const u8 rd,
+void tinyriscv_R_type(const u8 funct3, const u8 funct7, u32* x, const u8 rd,
 	const u8 rs1, const u8 rs2){
 
-	#define ADD  (x[rd] = x[rs1] + x[rs2])
-	#define SUB  (x[rd] = x[rs1] - x[rs2])
-	#define SLL  (x[rd] = x[rs1] << (x[rs2] & 0x1f))
-	#define SLT  (x[rd] = (i32)x[rs1] < (i32)x[rs2])
-	#define SLTU (x[rd] = x[rs1] < x[rs2])
-	#define XOR  (x[rd] = x[rs1] ^ x[rs2])
-	#define SRL  (x[rd] = x[rs1] >> (x[rs2] & 0x1f))
-	#define SRA  (x[rd] = (i32)x[rs1] >> (x[rs2] & 0x1f))
-	#define OR   (x[rd] = x[rs1] | x[rs2])
-	#define AND  (x[rd] = x[rs1] & x[rs2])
-
-	switch(funct3){
-	case 0: funct7 ? SUB : ADD; break; 
-	case 1: SLL; break; case 2: SLT; break; 
-	case 3: SLTU; break; case 4: XOR; break;
-	case 5: funct7 ? SRA : SRL; break;
-	case 6: OR; break; case 7: AND; break;
+	switch(funct7 << 3 | funct3){
+	case /*ADD*/  0x000: x[rd] = x[rs1] + x[rs2]; break;
+	case /*SUB*/  0x100: x[rd] = x[rs1] - x[rs2]; break;
+	case /*SLL*/  0x001: x[rd] = x[rs1] << (x[rs2] & 0x1f); break;
+	case /*SLT*/  0x002: x[rd] = (i32)x[rs1] < (i32)x[rs2]; break;
+	case /*SLTU*/ 0x003: x[rd] = x[rs1] < x[rs2]; break;
+	case /*XOR*/  0x004: x[rd] = x[rs1] ^ x[rs2]; break;
+	case /*SRL*/  0x005: x[rd] = x[rs1] >> (x[rs2] & 0x1f); break;
+	case /*SRA*/  0x105: x[rd] = (i32)x[rs1] >> (x[rs2] & 0x1f); break;
+	case /*OR*/   0x006: x[rd] = x[rs1] | x[rs2]; break;
+	case /*AND*/  0x007: x[rd] = x[rs1] & x[rs2]; break;
 	}
 }
 
