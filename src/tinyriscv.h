@@ -63,25 +63,22 @@ void tinyriscv_S_type(const u8 funct3, const u32* x, u8* mem, const u8 rs1,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_i_type(const u8 funct3, const u8 funct7, u32 x[32], const u8 rd, 
+void tinyriscv_I_type(const u8 funct3, const u8 funct7, u32* x, const u8 rd, 
 	const u8 rs1, const i16 imm, const u8 shamt){
 
-	#define ADDI  (x[rd] = x[rs1] + (i32)imm)
-	#define SLTI  (x[rd] = (i32)x[rs1] < (i32)imm)
-	#define SLTIU (x[rd] = x[rs1] < (u32)(i32)imm)
-	#define XORI  (x[rd] = x[rs1] ^ (i32)imm)
-	#define ORI   (x[rd] = x[rs1] | (i32)imm)
-	#define ANDI  (x[rd] = x[rs1] & (i32)imm)
-	#define SLLI  (x[rd] = x[rs1] << shamt)
-	#define SRLI  (x[rd] = x[rs1] >> shamt)
-	#define SRAI  (x[rd] = (i32)x[rs1] >> shamt)
-
 	switch(funct3){
-	case 0: ADDI; break; case 1: SLLI; break;
-	case 2: SLTI; break; case 3: SLTIU; break;
-	case 4: XORI; break;
-	case 5: funct7 ? SRAI : SRLI; break;
-	case 6: ORI; break; case 7: ANDI; break;
+	case /*ADDI*/  0: x[rd] = x[rs1] + (i32)imm; break;
+	case /*SLTI*/  2: x[rd] = (i32)x[rs1] < (i32)imm; break;
+	case /*SLTIU*/ 3: x[rd] = x[rs1] < (u32)(i32)imm; break;
+	case /*XORI*/  4: x[rd] = x[rs1] ^ (i32)imm; break;
+	case /*ORI*/   6: x[rd] = x[rs1] | (i32)imm; break;
+	case /*ANDI*/  7: x[rd] = x[rs1] & (i32)imm; break;
+	default: 
+		switch(funct7 << 3 | funct3){
+		case /*SLLI*/ 0x001: x[rd] = x[rs1] << shamt; break;
+		case /*SRLI*/ 0x005: x[rd] = x[rs1] >> shamt; break;
+		case /*SRAI*/ 0x105: x[rd] = (i32)x[rs1] >> shamt; break;
+		}
 	}
 }
 
