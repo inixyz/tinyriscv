@@ -191,6 +191,7 @@ int main(int argc, char** argv){
 		else{
 			printf("Invalid option: %s\n", argv[i]);			
 			printf("Try 'tinyriscv --help' for more information.\n");
+			exit(-1);
 		}
 	}
 
