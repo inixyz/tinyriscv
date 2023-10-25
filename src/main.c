@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#define TINYRISCV_M
 #include "tinyriscv.h"
 
 typedef enum{

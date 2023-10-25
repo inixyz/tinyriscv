@@ -6,6 +6,7 @@
 typedef uint8_t   u8; typedef int8_t   i8;
 typedef uint16_t u16; typedef int16_t i16;
 typedef uint32_t u32; typedef int32_t i32;
+typedef uint64_t u64; typedef int64_t i64;
 
 typedef struct{
 	u32 x[32], pc, mem_size;
@@ -103,6 +104,21 @@ inline void tinyriscv_R_type(const u8 funct3, const u8 funct7, u32* x,
 	case /*SRA*/  0x105: x[rd] = (i32)x[rs1] >> (x[rs2] & 0x1f); break;
 	case /*OR*/   0x006: x[rd] = x[rs1] | x[rs2]; break;
 	case /*AND*/  0x007: x[rd] = x[rs1] & x[rs2]; break;
+
+	#ifdef TINYRISCV_M
+	case /*MUL*/    0x008: x[rd] = x[rs1] * x[rs2]; break;
+	case /*MULH*/   0x009: 
+		x[rd] = ((i64)(i32)x[rs1] * (i64)(i32)x[rs2]) >> 32; 
+		break;
+	case /*MULHSU*/ 0x00a: 
+		x[rd] = ((i64)(i32)x[rs1] * (u64)x[rs2]) >> 32; 
+		break;
+	case /*MULHU*/  0x00b: x[rd] = ((u64)x[rs1] * (u64)x[rs2]) >> 32; break;
+	case /*DIV*/    0x00c: x[rd] = (i32)x[rs1] / (i32)x[rs2]; break;
+	case /*DIVU*/   0x00d: x[rd] = x[rs1] / x[rs2]; break;
+	case /*REM*/    0x00e: x[rd] = (i32)x[rs1] % (i32)x[rs2]; break;
+	case /*REMU*/   0x00f: x[rd] = x[rs1] % x[rs2]; break;
+	#endif
 	}
 }	
 
