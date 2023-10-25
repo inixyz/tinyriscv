@@ -148,43 +148,32 @@ void tinyriscv_step(tinyriscv_core* core){
 	core->x[0] = 0;
 
 	switch(opcode){
-	case /*LUI*/   0x37: 
-		core->x[rd] = inst & 0xfffff000; 
-		break;
-
-	case /*AUIPC*/ 0x17: 
+	case /*LUI*/    0x37: core->x[rd] = inst & 0xfffff000; break;
+	case /*AUIPC*/  0x17: 
 		core->x[rd] = core->pc - 4 + (inst & 0xfffff000); 
 		break;
-
-	case /*JAL*/   0x6f: 
-		core->x[rd] = core->pc; core->pc += imm_j - 4; 
-		break;
-
-	case /*JALR*/  0x67: 
+	case /*JAL*/    0x6f: core->x[rd] = core->pc; core->pc += imm_j - 4; break;
+	case /*JALR*/   0x67: 
 		const u32 ret_addr = core->pc;
 		core->pc = (core->x[rs1] + (i32)imm_i) & 0xfffffffe;
 		core->x[rd] = ret_addr;
 		break;
-
 	case /*B-type*/ 0x63: 
 		tinyriscv_B_type(funct3, core->x, &core->pc, rs1, rs2, imm_b); 
 		break;
-
 	case /*L-type*/ 0x03: 
 		tinyriscv_L_type(funct3, core->x, core->mem, rd, rs1, imm_i); 
 		break;
-
 	case /*S-type*/ 0x23: 
 		tinyriscv_S_type(funct3, core->x, core->mem, rs1, rs2, imm_s);
 		break;
-
 	case /*I-type*/ 0x13: 
 		tinyriscv_I_type(funct3, funct7, core->x, rd, rs1, imm_i, rs2); 
 		break;
-
 	case /*R-type*/ 0x33: 
 		tinyriscv_R_type(funct3, funct7, core->x, rd, rs1, rs2); 
 		break;
+	case /*FENCE*/  0x0f: break;
 	}
 }
 
