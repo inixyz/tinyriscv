@@ -66,7 +66,7 @@ void help(const char* message){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void regdump(const tinyriscv_hart* hart){
+void regdump(const tinyriscv_core* core){
 	printf("\n");
 	printf(" ABI   Reg Hex      │ ABI   Reg Hex     \n");
 	printf(" ───────────────────┼───────────────────\n");
@@ -85,8 +85,8 @@ void regdump(const tinyriscv_hart* hart){
 		printf(i < 10 ? " x%d " : " x%d", i);
 		set_fg_color(RESET);
 
-		if(hart->x[i]) set_fg_color(BRIGHT_GREEN);
-		printf(" %-8x", hart->x[i]);
+		if(core->x[i]) set_fg_color(BRIGHT_GREEN);
+		printf(" %-8x", core->x[i]);
 		set_fg_color(RESET);
 
 		printf(i % 2 ? " \n" : " │");
@@ -95,8 +95,8 @@ void regdump(const tinyriscv_hart* hart){
 	printf(" pc   ");
 	set_fg_color(BRIGHT_YELLOW);
 	printf(" x32");
-	if(hart->pc) set_fg_color(BRIGHT_GREEN);
-	printf(" %-8x", hart->pc);
+	if(core->pc) set_fg_color(BRIGHT_GREEN);
+	printf(" %-8x", core->pc);
 	set_fg_color(RESET);
 
 	printf(" │\n\n");
@@ -104,9 +104,9 @@ void regdump(const tinyriscv_hart* hart){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void memdump(const tinyriscv_hart* hart, uint32_t addr){
+void memdump(const tinyriscv_core* core, uint32_t addr){
 	addr -= tinyriscv_MEM_OFFSET;
-	if(addr + 256 > hart->mem_size) help("memdump: Address out of memory range.");
+	if(addr + 256 > core->mem_size) help("memdump: Address out of memory range.");
 
 	printf("\n");
 	printf(" Address  Memory                                          ASCII\n ");
@@ -119,12 +119,12 @@ void memdump(const tinyriscv_hart* hart, uint32_t addr){
 		set_fg_color(RESET);
 
 		for(uint32_t i = addr; i < addr + 16; i++){
-			set_fg_color(hart->mem[i] ? BRIGHT_WHITE : BRIGHT_BLACK);
-			printf("%.2x ", hart->mem[i]);
+			set_fg_color(core->mem[i] ? BRIGHT_WHITE : BRIGHT_BLACK);
+			printf("%.2x ", core->mem[i]);
 		}
 
 		for(uint32_t i = addr; i < addr + 16; i++){
-			const char c = hart->mem[i];
+			const char c = core->mem[i];
 			const unsigned int visible = c > 31 && c < 255 && c != 127;
 			set_fg_color(visible ? BRIGHT_WHITE : BRIGHT_BLACK);
 			printf("%c", visible ? c : '.');	
@@ -139,7 +139,7 @@ void memdump(const tinyriscv_hart* hart, uint32_t addr){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void load_mem_from_file(tinyriscv_hart* hart, const char* file_path){
+void load_mem_from_file(tinyriscv_core* core, const char* file_path){
 	FILE* file = fopen(file_path, "rb");
 	if(!file){
 		perror("ERROR: Can't open file");
@@ -150,13 +150,13 @@ void load_mem_from_file(tinyriscv_hart* hart, const char* file_path){
 	const unsigned int file_size = ftell(file);
 	rewind(file);
 
-	if(file_size > hart->mem_size){
+	if(file_size > core->mem_size){
 		printf("ERROR: [file] is bigger than allocated memory.");
 		fclose(file);
 		exit(-1);
 	}
 
-	fread(hart->mem, 1, file_size, file);
+	fread(core->mem, 1, file_size, file);
 	fclose(file);
 }
 
@@ -195,34 +195,34 @@ int main(int argc, char** argv){
 		}
 	}
 
-	tinyriscv_hart hart;
-	hart.mem = calloc(hart.mem_size = mem_size, 1);
+	tinyriscv_core core;
+	core.mem = calloc(core.mem_size = mem_size, 1);
 
 	//load program into memory
-	load_mem_from_file(&hart, file_path);
+	load_mem_from_file(&core, file_path);
 
 	//program execution
-	tinyriscv_init(&hart);
+	tinyriscv_init(&core);
 	if(do_debug){
-		while(tinyriscv_valid_step(&hart)){
+		while(tinyriscv_valid_step(&core)){
 			clear_screen();
 
-			if(do_regdump) regdump(&hart);
-			if(do_memdump) memdump(&hart, dump_addr);
+			if(do_regdump) regdump(&core);
+			if(do_memdump) memdump(&core, dump_addr);
 
 			printf("\nPress enter to step.\n");
 			while(getch() != 10);
 
-			tinyriscv_step(&hart);
+			tinyriscv_step(&core);
 		}
 	}
-	else while(tinyriscv_valid_step(&hart)) tinyriscv_step(&hart);
+	else while(tinyriscv_valid_step(&core)) tinyriscv_step(&core);
 
-	if(do_regdump) regdump(&hart);
-	if(do_memdump) memdump(&hart, dump_addr);
+	if(do_regdump) regdump(&core);
+	if(do_memdump) memdump(&core, dump_addr);
 
 	//cleanup
-	free(hart.mem);
+	free(core.mem);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

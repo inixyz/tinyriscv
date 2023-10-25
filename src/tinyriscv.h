@@ -10,7 +10,7 @@ typedef uint32_t u32; typedef int32_t i32;
 typedef struct{
 	u32 x[32], pc, mem_size;
 	u8* mem;
-}tinyriscv_hart;
+}tinyriscv_core;
 
 const u32 tinyriscv_MEM_OFFSET = 0x80000000;
 
@@ -108,25 +108,25 @@ inline void tinyriscv_R_type(const u8 funct3, const u8 funct7, u32* x,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_init(tinyriscv_hart* hart){
-	hart->x[2] = tinyriscv_MEM_OFFSET + hart->mem_size;
-	hart->pc = tinyriscv_MEM_OFFSET;
+void tinyriscv_init(tinyriscv_core* core){
+	core->x[2] = tinyriscv_MEM_OFFSET + core->mem_size;
+	core->pc = tinyriscv_MEM_OFFSET;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-u8 tinyriscv_valid_step(const tinyriscv_hart* hart){
-	if(!MEM(32, hart->mem, hart->pc)) return 0;
-	if(hart->pc >= hart->mem_size + tinyriscv_MEM_OFFSET) return 0;
+u8 tinyriscv_valid_step(const tinyriscv_core* core){
+	if(!MEM(32, core->mem, core->pc)) return 0;
+	if(core->pc >= core->mem_size + tinyriscv_MEM_OFFSET) return 0;
 	return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void tinyriscv_step(tinyriscv_hart* hart){
+void tinyriscv_step(tinyriscv_core* core){
 	//fetch
-	const u32 inst = MEM(32, hart->mem, hart->pc);
-	hart->pc += 4;
+	const u32 inst = MEM(32, core->mem, core->pc);
+	core->pc += 4;
 
 	//decode
 	#define opcode (inst & 0x7f)
@@ -145,45 +145,45 @@ void tinyriscv_step(tinyriscv_hart* hart){
         (inst >> 9 & 0x800) | (inst >> 20 & 0x7fe))
 
 	//execute
-	hart->x[0] = 0;
+	core->x[0] = 0;
 
 	switch(opcode){
 	case /*LUI*/   0x37: 
-		hart->x[rd] = inst & 0xfffff000; 
+		core->x[rd] = inst & 0xfffff000; 
 		break;
 
 	case /*AUIPC*/ 0x17: 
-		hart->x[rd] = hart->pc - 4 + (inst & 0xfffff000); 
+		core->x[rd] = core->pc - 4 + (inst & 0xfffff000); 
 		break;
 
 	case /*JAL*/   0x6f: 
-		hart->x[rd] = hart->pc; hart->pc += imm_j - 4; 
+		core->x[rd] = core->pc; core->pc += imm_j - 4; 
 		break;
 
 	case /*JALR*/  0x67: 
-		const u32 ret_addr = hart->pc;
-		hart->pc = (hart->x[rs1] + (i32)imm_i) & 0xfffffffe;
-		hart->x[rd] = ret_addr;
+		const u32 ret_addr = core->pc;
+		core->pc = (core->x[rs1] + (i32)imm_i) & 0xfffffffe;
+		core->x[rd] = ret_addr;
 		break;
 
 	case /*B-type*/ 0x63: 
-		tinyriscv_B_type(funct3, hart->x, &hart->pc, rs1, rs2, imm_b); 
+		tinyriscv_B_type(funct3, core->x, &core->pc, rs1, rs2, imm_b); 
 		break;
 
 	case /*L-type*/ 0x03: 
-		tinyriscv_L_type(funct3, hart->x, hart->mem, rd, rs1, imm_i); 
+		tinyriscv_L_type(funct3, core->x, core->mem, rd, rs1, imm_i); 
 		break;
 
 	case /*S-type*/ 0x23: 
-		tinyriscv_S_type(funct3, hart->x, hart->mem, rs1, rs2, imm_s);
+		tinyriscv_S_type(funct3, core->x, core->mem, rs1, rs2, imm_s);
 		break;
 
 	case /*I-type*/ 0x13: 
-		tinyriscv_I_type(funct3, funct7, hart->x, rd, rs1, imm_i, rs2); 
+		tinyriscv_I_type(funct3, funct7, core->x, rd, rs1, imm_i, rs2); 
 		break;
 
 	case /*R-type*/ 0x33: 
-		tinyriscv_R_type(funct3, funct7, hart->x, rd, rs1, rs2); 
+		tinyriscv_R_type(funct3, funct7, core->x, rd, rs1, rs2); 
 		break;
 	}
 }
