@@ -114,10 +114,22 @@ inline void tinyriscv_R_type(const u8 funct3, const u8 funct7, u32* x,
 		x[rd] = ((i64)(i32)x[rs1] * (u64)x[rs2]) >> 32; 
 		break;
 	case /*MULHU*/  0x00b: x[rd] = ((u64)x[rs1] * (u64)x[rs2]) >> 32; break;
-	case /*DIV*/    0x00c: x[rd] = (i32)x[rs1] / (i32)x[rs2]; break;
-	case /*DIVU*/   0x00d: x[rd] = x[rs1] / x[rs2]; break;
-	case /*REM*/    0x00e: x[rd] = (i32)x[rs1] % (i32)x[rs2]; break;
-	case /*REMU*/   0x00f: x[rd] = x[rs1] % x[rs2]; break;
+	case /*DIV*/    0x00c: 
+		if(x[rs2]) x[rd] = (i32)x[rs1] / (i32)x[rs2]; 
+		else x[rd] = -1; 
+		break;
+	case /*DIVU*/   0x00d: 
+		if(x[rs2]) x[rd] = x[rs1] / x[rs2]; 
+		else x[rd] = 0xffffffff; 
+		break;
+	case /*REM*/    0x00e: 
+		if(x[rs2]) x[rd] = (i32)x[rs1] % (i32)x[rs2]; 
+		else x[rd] = x[rs1];
+		break;
+	case /*REMU*/   0x00f: 
+		if(x[rs2]) x[rd] = x[rs1] % x[rs2]; 
+		else x[rd] = x[rs1];
+		break;
 	#endif
 	}
 }	
