@@ -12,6 +12,7 @@ tinyriscv is particulary suited to integration in simulation engines, embedded a
 
 - Implements a RISC-V rv32im
 - Portable, NO external dependencies (not even libc)
+- Written in plain C code (C99)
 - Minimal setup and maintenance
 - Easy to hack and improve
 - Efficient runtime and memory consumption
