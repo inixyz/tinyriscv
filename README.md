@@ -2,4 +2,5 @@
 
 # tinyriscv
 
-Compact, simple and easy-to-use RISCV emulator in ~200 lines of C.
+Compact, simple and easy-to-use RISCV emulator written in C. 
+
