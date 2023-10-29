@@ -21,6 +21,9 @@ make
 
 ## Usage 
 
+The core of tinyriscv is self-contained within a a single platform-agnostic file which you can easily compile in your application/engine. No specific build process is required. You can add the .h file into your existing project.
+
+Example:
 ```c
 #include "tinyriscv.h"
 int main(){
@@ -40,6 +43,7 @@ int main(){
 }
 ```
 
+Output:
 ```
  ABI   Reg Hex      │ ABI   Reg Hex     
  ───────────────────┼───────────────────
