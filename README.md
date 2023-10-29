@@ -19,7 +19,7 @@ tinyriscv is particulary suited to integration in simulation engines, embedded a
 
 ## Building and running
 
-tinyriscv comes with a simple cli interface [main.c](https://github.com/inixyz/tinyriscv/blob/main/src/main.c) to help debugging and to serve as an example of how to use the emulator core.  
+tinyriscv comes with a simple CLI interface [main.c](https://github.com/inixyz/tinyriscv/blob/main/src/main.c) to help debugging and to serve as an example of how to use the emulator core.  
 
 ```
 git clone https://github.com/inixyz/tinyriscv/
