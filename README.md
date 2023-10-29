@@ -2,5 +2,6 @@
 
 # tinyriscv
 
-Compact, simple and easy-to-use RISCV emulator written in C. 
+Compact, simple and easy-to-use RISCV emulator written in C. The core is contained in a single-file-header tinyriscv.h following the STB library style. 
+It is fast, portable, platform agnostic, and self-contained (no external dependencies).
 
