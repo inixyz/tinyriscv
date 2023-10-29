@@ -96,4 +96,4 @@ Output:
 
 ## License
 
-tinyriscv is licensed under the MIT License, see LICENSE.txt for more information.
+tinyriscv is licensed under the MIT License, see [LICENSE](https://github.com/inixyz/tinyriscv/blob/main/LICENSE) for more information.
