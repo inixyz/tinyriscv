@@ -10,7 +10,11 @@ tinyriscv is particulary suited to integration in simulation engines, embedded a
 
 ## Features
 
-- NO external dependencies (not even libc)
+- Implements a RISC-V rv32im
+- Portable, NO external dependencies (not even libc)
+- Minimal setup and maintenance
+- Easy to hack and improve
+- Efficient runtime and memory consumption
 
 ## Building and running
 
@@ -89,3 +93,7 @@ Output:
  800000e0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
  800000f0 48 65 6c 6c 6f 21 00 00 00 00 00 00 00 00 00 00 Hello!..........
 ```
+
+## License
+
+tinyriscv is licensed under the MIT License, see LICENSE.txt for more information.
