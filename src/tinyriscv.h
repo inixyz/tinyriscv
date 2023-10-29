@@ -164,7 +164,7 @@ void tinyriscv_step(tinyriscv_core* core){
 	#define rs1 (inst >> 15 & 0x1f)
 	#define rs2 (inst >> 20 & 0x1f)
 	#define imm_i ((i32)inst >> 20)
-	#define imm_s (imm_i & 0xffffffe0 | rd)
+	#define imm_s ((imm_i & 0xffffffe0) | rd)
 
 	#define imm_b (((i32)(inst & 0x80000000) >> 19) | \
 		((inst & 0x80) << 4) | (inst >> 20 & 0x7e0) | (inst >> 7 & 0x1e))

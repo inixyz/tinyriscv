@@ -107,10 +107,12 @@ void regdump(const tinyriscv_core* core){
 
 void memdump(const tinyriscv_core* core, uint32_t addr){
 	addr -= tinyriscv_MEM_OFFSET;
-	if(addr + 256 > core->mem_size) help("memdump: Address out of memory range.");
+	if(addr + 256 > core->mem_size){
+		help("memdump: Address out of memory range.");
+	}
 
 	printf("\n");
-	printf(" Address  Memory                                          ASCII\n ");
+	printf(" Address  Memory                                          ASCII\n");
 	for(unsigned int i = 0; i < 73; i++) printf("─");
 	printf("\n");
 
@@ -157,7 +159,10 @@ void load_mem_from_file(tinyriscv_core* core, const char* file_path){
 		exit(-1);
 	}
 
-	fread(core->mem, 1, file_size, file);
+	if(fread(core->mem, 1, file_size, file) != file_size){
+		perror("ERROR: 'fread' count different from expected file size.");
+		exit(-1);
+	}
 	fclose(file);
 }
 
@@ -177,6 +182,7 @@ int main(int argc, char** argv){
 		else if(!strcmp(argv[i], "--bin")){
 			if(i + 1 >= argc) help("Invalid file path."); 
 			strncpy(file_path, argv[i++ + 1], 256);
+			file_path[255] = '\0';
 		}
 		else if(!strcmp(argv[i], "--mem_size")){
 			if(i + 1 >= argc) help("Invalid [mem_size] value.");
