@@ -1,1 +1,3 @@
-tinyriscv
+#executables
+*.out
+*.exe
