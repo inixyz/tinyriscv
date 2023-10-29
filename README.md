@@ -10,7 +10,7 @@ tinyriscv is particulary suited to integration in simulation engines, embedded a
 
 ## Building and running
 
-tinyriscv comes with a simple cli interface [main.c](https://github.com/inixyz/tinyriscv/blob/main/src/main.c) to aid debugging and to serve as an example of how to use the emulator core.  
+tinyriscv comes with a simple cli interface [main.c](https://github.com/inixyz/tinyriscv/blob/main/src/main.c) to help debugging and to serve as an example of how to use the emulator core.  
 
 ```
 git clone https://github.com/inixyz/tinyriscv/
@@ -20,6 +20,25 @@ make
 ```
 
 ## Usage 
+
+```c
+#include "tinyriscv.h"
+int main(){
+    uint8_t memory[4096]; //4kb of internal memory
+    tinyriscv_core cpu;   //create the emulation core
+    cpu.mem = memory;  //use the uint8_t array as the memory
+
+    //load program into memory
+
+    tinyriscv_init(&cpu); //initialise core for execution
+
+    while(tinyriscv_valid_step(&cpu)) //checks for EOF or invalid instruction
+        tinyriscv_step(&cpu); //execute the current instruction
+
+    //regdump(&core);
+    //memdump(&core);
+}
+```
 
 ```
  ABI   Reg Hex      │ ABI   Reg Hex     
