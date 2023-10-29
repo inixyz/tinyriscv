@@ -8,7 +8,17 @@ tinyriscv is designed to enable fast iterations and to empower programmers to cr
 
 tinyriscv is particulary suited to integration in simulation engines, embedded applications or any applications on platforms where operating system features are non-standard.
 
+## Building and running
 
+```
+git clone https://github.com/inixyz/tinyriscv/
+cd tinyriscv
+make
+```
+
+## Usage 
+
+```
  ABI   Reg Hex      │ ABI   Reg Hex     
  ───────────────────┼───────────────────
  zero  x0  0        │ ra    x1  0        
@@ -28,7 +38,8 @@ tinyriscv is particulary suited to integration in simulation engines, embedded a
  t3    x28 0        │ t4    x29 0        
  t5    x30 0        │ t6    x31 0        
  pc    x32 80000084 │
-
+```
+```
  Address  Memory                                          ASCII
 ─────────────────────────────────────────────────────────────────────────
  80000000 13 01 01 fe 23 2e 81 00 13 04 01 02 b7 07 00 80 ....#...........
@@ -47,3 +58,4 @@ tinyriscv is particulary suited to integration in simulation engines, embedded a
  800000d0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
  800000e0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
  800000f0 48 65 6c 6c 6f 21 00 00 00 00 00 00 00 00 00 00 Hello!..........
+```
