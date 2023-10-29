@@ -21,7 +21,7 @@ make
 
 ## Usage 
 
-```c
+```js
 #include "tinyriscv.h"
 int main(){
     uint8_t memory[4096]; //4kb of internal memory
@@ -40,7 +40,7 @@ int main(){
 }
 ```
 
-```c
+```js
  ABI   Reg Hex      │ ABI   Reg Hex     
  ───────────────────┼───────────────────
  zero  x0  0        │ ra    x1  0        
