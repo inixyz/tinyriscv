@@ -21,7 +21,7 @@ make
 
 ## Usage 
 
-```hex
+```c
 #include "tinyriscv.h"
 int main(){
     uint8_t memory[4096]; //4kb of internal memory
