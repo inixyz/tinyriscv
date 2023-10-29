@@ -8,6 +8,10 @@ tinyriscv is designed to enable fast iterations and to empower programmers to cr
 
 tinyriscv is particulary suited to integration in simulation engines, embedded applications or any applications on platforms where operating system features are non-standard.
 
+## Features
+
+- NO external dependencies (not even libc)
+
 ## Building and running
 
 tinyriscv comes with a simple cli interface [main.c](https://github.com/inixyz/tinyriscv/blob/main/src/main.c) to help debugging and to serve as an example of how to use the emulator core.  
@@ -35,7 +39,7 @@ int main(){
 
     tinyriscv_init(&cpu); //initialise core for execution
 
-    while(tinyriscv_valid_step(&cpu)) //checks for EOF or invalid instruction
+    while(tinyriscv_valid_step(&cpu)) //check for EOF or invalid instruction
         tinyriscv_step(&cpu); //execute the current instruction
 
     //regdump(&core);
